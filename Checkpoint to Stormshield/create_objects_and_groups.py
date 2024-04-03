@@ -9,61 +9,125 @@
 #
 ##############################################################################################
 
-import json
+import json, os
 
 from variables import api_call, sid, fw_stormshield, CPmgmtIP
 
+
+
 def getCheckpointHosts():
+    limit = 1
     payload = {
         # change the limit to the max to ensure to get all services (500) on Checkpoint
-        "limit": 2,
+        "limit": limit,
         "details-level": "standard"
     }
+    parsedResponse = {}
     response = api_call(CPmgmtIP, 443, 'show-hosts', payload, sid)
-    print(sid)
-    return(response)
+    parsedResponse['objects'] = response["objects"]
+    total = int(response['total'])
+    to = int(response['to'])
+    while total > to:
+        offset = to
+        payload = {
+            "limit": limit,
+            "details-level": "standard",
+            "offset": offset
+        }
+        response = api_call(CPmgmtIP, 443, 'show-hosts', payload, sid)
+        parsedResponse['objects'].extend(response["objects"])
+        to = int(response['to'])
+
+    return(json.dumps(parsedResponse["objects"]))
 
 def getCheckpointNetworks():
+    limit = 1
     payload = {
         # change the limit to the max to ensure to get all services (500) on Checkpoint
-        "limit": 2,
+        "limit": limit,
         "details-level": "standard"
     }
+    parsedResponse = {}
     response = api_call(CPmgmtIP, 443, 'show-networks', payload, sid)
-    return (response)
+    total = int(response['total'])
+    to = int(response['to'])
+    while total > to:
+        offset = to
+        payload = {
+            "limit": limit,
+            "details-level": "standard",
+            "offset": offset
+        }
+        response = api_call(CPmgmtIP, 443, 'show-networks', payload, sid)
+        parsedResponse['objects'].extend(response["objects"])
+        to = int(response['to'])
+    return (parsedResponse)
 
 def getCheckpointAddressRanges():
+    limit = 1
     payload = {
         # change the limit to the max to ensure to get all services (500) on Checkpoint
-        "limit": 2,
+        "limit": limit,
         "details-level": "standard"
     }
+    parsedResponse = {}
     response = api_call(CPmgmtIP, 443, 'show-address-ranges', payload, sid)
-    return(response)
+    total = int(response['total'])
+    to = int(response['to'])
+    while total > to:
+        offset = to
+        payload = {
+            "limit": limit,
+            "details-level": "standard",
+            "offset": offset
+        }
+        response = api_call(CPmgmtIP, 443, 'show-address-ranges', payload, sid)
+        parsedResponse['objects'].extend(response["objects"])
+        to = int(response['to'])
+    return (parsedResponse)
+
 
 def getCheckpointGroups():
+    limit = 1
     payload = {
         # change the limit to the max to ensure to get all services (500) on Checkpoint
-        "limit": 2,
+        "limit": limit,
         "details-level": "full"
     }
+    parsedResponse = {}
     response = api_call(CPmgmtIP, 443, 'show-groups', payload, sid)
-    return (response)
+    total = int(response['total'])
+    to = int(response['to'])
+    while total > to:
+        offset = to
+        payload = {
+            "limit": limit,
+            "details-level": "standard",
+            "offset": offset
+        }
+        response = api_call(CPmgmtIP, 443, 'show-groups', payload, sid)
+        parsedResponse['objects'].extend(response["objects"])
+        to = int(response['to'])
+    return (parsedResponse)
 
 
 def createNetworkGroups(groupsList):
     for group in groupsList["objects"]:
         groupName = group['name']
         comment = group['comments']
+        uuid = group['uid']
+        object = {
+            "name": groupName,
+            "uuid": uuid
+        }
         query = "config global object group new name=" + groupName + ' comment="' + comment +'"'
-        print(fw_stormshield.send_command(query))
-
+        #print(fw_stormshield.send_command(query))
 
 def makeObjectsList(hostsList, networkList, rangeList):
     jsonExtract = {
         "objects": []
     }
-    for element in hostsList['objects']:
+    for element in json.load(hostsList['objects']):
         payload = {
             "name": element['name'],
         }
@@ -94,7 +158,6 @@ def createStormshieldObjects(objectList):
         type = element["type"]
         comment = element['comments']
         groups = element['groups']
-
         match type:
             case "host":
                 ipv4 = element['ipv4-address']
@@ -118,8 +181,8 @@ def createStormshieldObjects(objectList):
         if groups:
             for group in groups:
                 addToGroup = "config global object group addto group=" + group['name'] + " node=" + name
+                print(addToGroup)
                 print(fw_stormshield.send_command(addToGroup))
-
 
 def main():
     print(fw_stormshield.send_command("modify on"))
