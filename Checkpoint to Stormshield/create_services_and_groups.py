@@ -12,7 +12,7 @@ def getTCPServices():
         "details-level": "standard"
     }
     #change the limit to the max to ensure to get all services (500) on Checkpoint
-    response = api_call(CPmgmtIP, 443, 'show-services-tcp', payload, sid)
+    response = api_call(CPmgmtIP, 443, 'show-services-tcp', payload, sid)[0]
     parsedResponse['objects'].extend(response["objects"])
     total = response['total']
     to = response['to']
@@ -23,7 +23,7 @@ def getTCPServices():
             "details-level": "standard",
             "offset":offset
         }
-        response = api_call(CPmgmtIP, 443, 'show-services-tcp', payload, sid)
+        response = api_call(CPmgmtIP, 443, 'show-services-tcp', payload, sid)[0]
         parsedResponse['objects'].extend(response["objects"])
         to = response['to']
     return(json.dumps(parsedResponse, indent=2))
@@ -39,7 +39,7 @@ def getUDPServices():
     }
 
     #change the limit to the max to ensure to get all services (500) on Checkpoint
-    response = api_call(CPmgmtIP, 443, 'show-services-udp', payload, sid)
+    response = api_call(CPmgmtIP, 443, 'show-services-udp', payload, sid)[0]
     parsedResponse['objects'].extend(response["objects"])
     total = response['total']
     to = response['to']
@@ -50,7 +50,7 @@ def getUDPServices():
             "details-level": "standard",
             "offset": offset
         }
-        response = api_call(CPmgmtIP, 443, 'show-services-udp', payload, sid)
+        response = api_call(CPmgmtIP, 443, 'show-services-udp', payload, sid)[0]
         parsedResponse['objects'].extend(response["objects"])
         to = response['to']
     return (json.dumps(parsedResponse, indent=2))
@@ -66,13 +66,13 @@ def createServiceList(TCPserviceList, UDPserviceList):
         payload = {
             "name": element['name'],
         }
-        response = api_call(CPmgmtIP, 443, 'show-service-tcp', payload, sid)
+        response = api_call(CPmgmtIP, 443, 'show-service-tcp', payload, sid)[0]
         jsonExtract['objects'].append(response)
     for element in UDPserviceList['objects']:
         payload = {
             "name": element['name'],
         }
-        response = api_call(CPmgmtIP, 443, 'show-service-udp', payload, sid)
+        response = api_call(CPmgmtIP, 443, 'show-service-udp', payload, sid)[0]
         jsonExtract['objects'].append(response)
 
     return(json.dumps(jsonExtract))
@@ -89,7 +89,7 @@ def getCheckpointServiceGroups():
     }
 
     # change the limit to the max to ensure to get all services (500) on Checkpoint
-    response = api_call(CPmgmtIP, 443, 'show-service-groups', payload, sid)
+    response = api_call(CPmgmtIP, 443, 'show-service-groups', payload, sid)[0]
     parsedResponse['objects'].extend(response["objects"])
     total = response['total']
     to = response['to']
@@ -100,7 +100,7 @@ def getCheckpointServiceGroups():
             "details-level": "standard",
             "offset": offset
         }
-        response = api_call(CPmgmtIP, 443, 'show-service-groups', payload, sid)
+        response = api_call(CPmgmtIP, 443, 'show-service-groups', payload, sid)[0]
         parsedResponse['objects'].extend(response["objects"])
         to = response['to']
     return (json.dumps(parsedResponse, indent=2))
@@ -114,7 +114,7 @@ def createServiceGroupsList(groupsList):
         payload = {
             "name": element['name'],
         }
-        response = api_call(CPmgmtIP, 443, 'show-service-group', payload, sid)
+        response = api_call(CPmgmtIP, 443, 'show-service-group', payload, sid)[0]
         jsonExtract['objects'].append(response)
     return (json.dumps(jsonExtract))
 
@@ -125,7 +125,7 @@ def createStormshieldServicegroups(servicegroups):
         comment = group['comments']
         query = "config global object servicegroup new name=" + groupName + ' comment="' + comment +'"'
         print(query)
-        print(fw_stormshield.send_command(query))
+        #print(fw_stormshield.send_command(query))
 
 def createStormshieldServices(servicesList):
     servicesList = json.loads(servicesList)
@@ -151,21 +151,21 @@ def createStormshieldServices(servicesList):
             case _:
                 query = "config global object service new name=" + serviceName + " port=" + port + ' proto='+ serviceType +' comment="' + comment + '"'
         print(query)
-        print(fw_stormshield.send_command(query))
+        #print(fw_stormshield.send_command(query))
 
         if groups:
             for group in groups:
                 addToGroup = "config global object servicegroup addto group=" + group['name'] + " node=" + serviceName
                 print(addToGroup)
-                print(fw_stormshield.send_command(addToGroup))
+                #print(fw_stormshield.send_command(addToGroup))
 
 
 def main():
-    print(fw_stormshield.send_command("modify on"))
+    #print(fw_stormshield.send_command("modify on"))
     servicesList = createServiceList(getTCPServices(), getUDPServices())
     serviceGroups = createServiceGroupsList(getCheckpointServiceGroups())
     createStormshieldServicegroups(serviceGroups)
     createStormshieldServices(servicesList)
-    fw_stormshield.disconnect()
+    #fw_stormshield.disconnect()
 
 main()

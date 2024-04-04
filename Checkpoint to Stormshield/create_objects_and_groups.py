@@ -23,7 +23,7 @@ def getCheckpointHosts():
         "details-level": "standard"
     }
     parsedResponse = {}
-    response = api_call(CPmgmtIP, 443, 'show-hosts', payload, sid)
+    response = api_call(CPmgmtIP, 443, 'show-hosts', payload, sid)[0]
     parsedResponse['objects'] = response["objects"]
     total = int(response['total'])
     to = int(response['to'])
@@ -34,11 +34,11 @@ def getCheckpointHosts():
             "details-level": "standard",
             "offset": offset
         }
-        response = api_call(CPmgmtIP, 443, 'show-hosts', payload, sid)
+        response = api_call(CPmgmtIP, 443, 'show-hosts', payload, sid)[0]
         parsedResponse['objects'].extend(response["objects"])
         to = int(response['to'])
 
-    return(json.dumps(parsedResponse["objects"]))
+    return (parsedResponse)
 
 def getCheckpointNetworks():
     limit = 1
@@ -48,7 +48,8 @@ def getCheckpointNetworks():
         "details-level": "standard"
     }
     parsedResponse = {}
-    response = api_call(CPmgmtIP, 443, 'show-networks', payload, sid)
+    response = api_call(CPmgmtIP, 443, 'show-networks', payload, sid)[0]
+    parsedResponse['objects'] = response["objects"]
     total = int(response['total'])
     to = int(response['to'])
     while total > to:
@@ -58,7 +59,7 @@ def getCheckpointNetworks():
             "details-level": "standard",
             "offset": offset
         }
-        response = api_call(CPmgmtIP, 443, 'show-networks', payload, sid)
+        response = api_call(CPmgmtIP, 443, 'show-networks', payload, sid)[0]
         parsedResponse['objects'].extend(response["objects"])
         to = int(response['to'])
     return (parsedResponse)
@@ -71,7 +72,8 @@ def getCheckpointAddressRanges():
         "details-level": "standard"
     }
     parsedResponse = {}
-    response = api_call(CPmgmtIP, 443, 'show-address-ranges', payload, sid)
+    response = api_call(CPmgmtIP, 443, 'show-address-ranges', payload, sid)[0]
+    parsedResponse['objects'] = response["objects"]
     total = int(response['total'])
     to = int(response['to'])
     while total > to:
@@ -81,7 +83,7 @@ def getCheckpointAddressRanges():
             "details-level": "standard",
             "offset": offset
         }
-        response = api_call(CPmgmtIP, 443, 'show-address-ranges', payload, sid)
+        response = api_call(CPmgmtIP, 443, 'show-address-ranges', payload, sid)[0]
         parsedResponse['objects'].extend(response["objects"])
         to = int(response['to'])
     return (parsedResponse)
@@ -95,7 +97,8 @@ def getCheckpointGroups():
         "details-level": "full"
     }
     parsedResponse = {}
-    response = api_call(CPmgmtIP, 443, 'show-groups', payload, sid)
+    response = api_call(CPmgmtIP, 443, 'show-groups', payload, sid)[0]
+    parsedResponse['objects'] = response["objects"]
     total = int(response['total'])
     to = int(response['to'])
     while total > to:
@@ -105,7 +108,7 @@ def getCheckpointGroups():
             "details-level": "standard",
             "offset": offset
         }
-        response = api_call(CPmgmtIP, 443, 'show-groups', payload, sid)
+        response = api_call(CPmgmtIP, 443, 'show-groups', payload, sid)[0]
         parsedResponse['objects'].extend(response["objects"])
         to = int(response['to'])
     return (parsedResponse)
@@ -121,31 +124,32 @@ def createNetworkGroups(groupsList):
             "uuid": uuid
         }
         query = "config global object group new name=" + groupName + ' comment="' + comment +'"'
+        print(query)
         #print(fw_stormshield.send_command(query))
 
 def makeObjectsList(hostsList, networkList, rangeList):
     jsonExtract = {
         "objects": []
     }
-    for element in json.load(hostsList['objects']):
+    for element in hostsList['objects']:
         payload = {
             "name": element['name'],
         }
-        response = api_call(CPmgmtIP, 443, 'show-host', payload, sid)
+        response = api_call(CPmgmtIP, 443, 'show-host', payload, sid)[0]
         jsonExtract['objects'].append(response)
 
     for element in networkList['objects']:
         payload = {
             "name": element['name'],
         }
-        response = api_call(CPmgmtIP, 443, 'show-network', payload, sid)
+        response = api_call(CPmgmtIP, 443, 'show-network', payload, sid)[0]
         jsonExtract['objects'].append(response)
 
     for element in rangeList['objects']:
         payload = {
             "name": element['name'],
         }
-        response = api_call(CPmgmtIP, 443, 'show-address-range', payload, sid)
+        response = api_call(CPmgmtIP, 443, 'show-address-range', payload, sid)[0]
         jsonExtract['objects'].append(response)
 
     return(json.dumps(jsonExtract))
@@ -176,21 +180,21 @@ def createStormshieldObjects(objectList):
                 endIP = element['ipv4-address-last']
                 query = "config global object host new name="+ name + " begin=" + startIP +" end="+ endIP + ' comment="' + comment +'"'
         print(query)
-        print(fw_stormshield.send_command(query))
+        #print(fw_stormshield.send_command(query))
 
         if groups:
             for group in groups:
                 addToGroup = "config global object group addto group=" + group['name'] + " node=" + name
                 print(addToGroup)
-                print(fw_stormshield.send_command(addToGroup))
+                #print(fw_stormshield.send_command(addToGroup))
 
 def main():
-    print(fw_stormshield.send_command("modify on"))
+    #print(fw_stormshield.send_command("modify on"))
     objectGroups = getCheckpointGroups()
     objectList = makeObjectsList(getCheckpointHosts(), getCheckpointNetworks(), getCheckpointAddressRanges())
     createNetworkGroups(objectGroups)
     createStormshieldObjects(objectList)
-    fw_stormshield.disconnect()
+    #fw_stormshield.disconnect()
 
 if __name__ == '__main__':
     main()
