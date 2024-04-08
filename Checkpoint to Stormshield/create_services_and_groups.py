@@ -123,7 +123,7 @@ def createStormshieldServicegroups(servicegroups):
     for group in servicegroups['objects']:
         groupName = group['name']
         comment = group['comments']
-        query = "config global object servicegroup new name=" + groupName + ' comment="' + comment +'"'
+        query = "config  object servicegroup new name=" + groupName + ' comment="' + comment +'"'
         print(query)
         #print(fw_stormshield.send_command(query))
 
@@ -144,18 +144,18 @@ def createStormshieldServices(servicesList):
             case x if "-" in x:
                 startPort = port[0: port.index("-")]
                 endPort = port[port.index("-") + len("-"):]
-                query = "config global object service new name=" + serviceName + " port=" + startPort + ' proto='+ serviceType +' comment="' + comment + '" toport=' + endPort
+                query = "config  object service new name=" + serviceName + " port=" + startPort + ' proto='+ serviceType +' comment="' + comment + '" toport=' + endPort
             case x if ">" in x:
                 startPort = str(int(str(port).replace(">", "")) + 1)
-                query = "config global object service new name=" + serviceName + " port=" + startPort + ' proto='+ serviceType +' comment="' + comment + '" toport=65535'
+                query = "config  object service new name=" + serviceName + " port=" + startPort + ' proto='+ serviceType +' comment="' + comment + '" toport=65535'
             case _:
-                query = "config global object service new name=" + serviceName + " port=" + port + ' proto='+ serviceType +' comment="' + comment + '"'
+                query = "config  object service new name=" + serviceName + " port=" + port + ' proto='+ serviceType +' comment="' + comment + '"'
         print(query)
         #print(fw_stormshield.send_command(query))
 
         if groups:
             for group in groups:
-                addToGroup = "config global object servicegroup addto group=" + group['name'] + " node=" + serviceName
+                addToGroup = "config  object servicegroup addto group=" + group['name'] + " node=" + serviceName
                 print(addToGroup)
                 #print(fw_stormshield.send_command(addToGroup))
 

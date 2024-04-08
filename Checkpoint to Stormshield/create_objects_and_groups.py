@@ -119,11 +119,7 @@ def createNetworkGroups(groupsList):
         groupName = group['name']
         comment = group['comments']
         uuid = group['uid']
-        object = {
-            "name": groupName,
-            "uuid": uuid
-        }
-        query = "config global object group new name=" + groupName + ' comment="' + comment +'"'
+        query = "config  object group new name=" + groupName + ' comment="' + comment +'"'
         print(query)
         #print(fw_stormshield.send_command(query))
 
@@ -165,26 +161,26 @@ def createStormshieldObjects(objectList):
         match type:
             case "host":
                 ipv4 = element['ipv4-address']
-                query = "config global object host new name="+ name + " ip=" + ipv4 + ' comment="' + comment +'"'
+                query = "config object host new name="+ name + " ip=" + ipv4 + ' comment="' + comment +'"'
             case "network":
                 if "subnet4" in element:
                     mask = element['subnet-mask']
                     subnet = element['subnet4']
-                    query = "config global object network new name="+ name + " ip=" + subnet +" mask="+ mask + ' comment="' + comment +'"'
+                    query = "config object network new name="+ name + " ip=" + subnet +" mask="+ mask + ' comment="' + comment +'"'
                 elif "subnet6" in element:
                     prefix = element['mask-length6']
                     subnet = element['subnet6']
-                    query = "config global object network new name="+ name + " ipv6=" + subnet +" prefixlenv6="+ str(prefix) + ' comment="' + comment +'"'
+                    query = "config object network new name="+ name + " ipv6=" + subnet +" prefixlenv6="+ str(prefix) + ' comment="' + comment +'"'
             case "address-range":
                 startIP = element['ipv4-address-first']
                 endIP = element['ipv4-address-last']
-                query = "config global object host new name="+ name + " begin=" + startIP +" end="+ endIP + ' comment="' + comment +'"'
+                query = "config object host new name="+ name + " begin=" + startIP +" end="+ endIP + ' comment="' + comment +'"'
         print(query)
         #print(fw_stormshield.send_command(query))
 
         if groups:
             for group in groups:
-                addToGroup = "config global object group addto group=" + group['name'] + " node=" + name
+                addToGroup = "config object group addto group=" + group['name'] + " node=" + name
                 print(addToGroup)
                 #print(fw_stormshield.send_command(addToGroup))
 
