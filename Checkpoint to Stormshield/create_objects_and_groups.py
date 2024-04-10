@@ -13,20 +13,22 @@ import json, os
 
 from variables import api_call, sid, fw_stormshield, CPmgmtIP
 
-
-
 def getCheckpointHosts():
-    limit = 1
+    limit = 200
     payload = {
         # change the limit to the max to ensure to get all services (500) on Checkpoint
         "limit": limit,
         "details-level": "standard"
     }
     parsedResponse = {}
-    response = api_call(CPmgmtIP, 443, 'show-hosts', payload, sid)[0]
-    parsedResponse['objects'] = response["objects"]
-    total = int(response['total'])
-    to = int(response['to'])
+    try:
+        response = api_call(CPmgmtIP, 443, 'show-hosts', payload, sid)[0]
+        parsedResponse['objects'] = response["objects"]
+        total = int(response['total'])
+        to = int(response['to'])
+    except:
+        print("API Call for hosts failed, skipping offset")
+
     while total > to:
         offset = to
         payload = {
@@ -34,24 +36,30 @@ def getCheckpointHosts():
             "details-level": "standard",
             "offset": offset
         }
-        response = api_call(CPmgmtIP, 443, 'show-hosts', payload, sid)[0]
-        parsedResponse['objects'].extend(response["objects"])
-        to = int(response['to'])
+        try:
+            response = api_call(CPmgmtIP, 443, 'show-hosts', payload, sid)[0]
+            parsedResponse['objects'].extend(response["objects"])
+            to = int(response['to'])
+        except:
+            print("API Call for hosts failed, skipping offset")
 
     return (parsedResponse)
 
 def getCheckpointNetworks():
-    limit = 1
+    limit = 200
     payload = {
         # change the limit to the max to ensure to get all services (500) on Checkpoint
         "limit": limit,
         "details-level": "standard"
     }
     parsedResponse = {}
-    response = api_call(CPmgmtIP, 443, 'show-networks', payload, sid)[0]
-    parsedResponse['objects'] = response["objects"]
-    total = int(response['total'])
-    to = int(response['to'])
+    try:
+        response = api_call(CPmgmtIP, 443, 'show-networks', payload, sid)[0]
+        parsedResponse['objects'] = response["objects"]
+        total = int(response['total'])
+        to = int(response['to'])
+    except:
+        print("API call for Networks failed, skipping offset")
     while total > to:
         offset = to
         payload = {
@@ -59,23 +67,30 @@ def getCheckpointNetworks():
             "details-level": "standard",
             "offset": offset
         }
-        response = api_call(CPmgmtIP, 443, 'show-networks', payload, sid)[0]
-        parsedResponse['objects'].extend(response["objects"])
-        to = int(response['to'])
+        try:
+            response = api_call(CPmgmtIP, 443, 'show-networks', payload, sid)[0]
+            parsedResponse['objects'].extend(response["objects"])
+            to = int(response['to'])
+        except:
+            print("API call for Networks failed, skipping offset")
+
     return (parsedResponse)
 
 def getCheckpointAddressRanges():
-    limit = 1
+    limit = 200
     payload = {
         # change the limit to the max to ensure to get all services (500) on Checkpoint
         "limit": limit,
         "details-level": "standard"
     }
     parsedResponse = {}
-    response = api_call(CPmgmtIP, 443, 'show-address-ranges', payload, sid)[0]
-    parsedResponse['objects'] = response["objects"]
-    total = int(response['total'])
-    to = int(response['to'])
+    try:
+        response = api_call(CPmgmtIP, 443, 'show-address-ranges', payload, sid)[0]
+        parsedResponse['objects'] = response["objects"]
+        total = int(response['total'])
+        to = int(response['to'])
+    except:
+        print("API Call for address ranges failed, skipping offset #1")
     while total > to:
         offset = to
         payload = {
@@ -83,9 +98,12 @@ def getCheckpointAddressRanges():
             "details-level": "standard",
             "offset": offset
         }
-        response = api_call(CPmgmtIP, 443, 'show-address-ranges', payload, sid)[0]
-        parsedResponse['objects'].extend(response["objects"])
-        to = int(response['to'])
+        try:
+            response = api_call(CPmgmtIP, 443, 'show-address-ranges', payload, sid)[0]
+            parsedResponse['objects'].extend(response["objects"])
+            to = int(response['to'])
+        except:
+            print("API Call for address ranges failed, skipping offset")
     return (parsedResponse)
 
 
@@ -97,10 +115,13 @@ def getCheckpointGroups():
         "details-level": "full"
     }
     parsedResponse = {}
-    response = api_call(CPmgmtIP, 443, 'show-groups', payload, sid)[0]
-    parsedResponse['objects'] = response["objects"]
-    total = int(response['total'])
-    to = int(response['to'])
+    try:
+        response = api_call(CPmgmtIP, 443, 'show-groups', payload, sid)[0]
+        parsedResponse['objects'] = response["objects"]
+        total = int(response['total'])
+        to = int(response['to'])
+    except:
+        print("API call for object groups failed, skipping offset #1")
     while total > to:
         offset = to
         payload = {
@@ -108,9 +129,12 @@ def getCheckpointGroups():
             "details-level": "standard",
             "offset": offset
         }
-        response = api_call(CPmgmtIP, 443, 'show-groups', payload, sid)[0]
-        parsedResponse['objects'].extend(response["objects"])
-        to = int(response['to'])
+        try:
+            response = api_call(CPmgmtIP, 443, 'show-groups', payload, sid)[0]
+            parsedResponse['objects'].extend(response["objects"])
+            to = int(response['to'])
+        except:
+            print("API call for objects groups failed, skipping offset")
     return (parsedResponse)
 
 
@@ -118,7 +142,6 @@ def createNetworkGroups(groupsList):
     for group in groupsList["objects"]:
         groupName = group['name']
         comment = group['comments']
-        uuid = group['uid']
         query = "config  object group new name=" + groupName + ' comment="' + comment +'"'
         print(query)
         #print(fw_stormshield.send_command(query))
@@ -128,26 +151,43 @@ def makeObjectsList(hostsList, networkList, rangeList):
         "objects": []
     }
     for element in hostsList['objects']:
-        payload = {
-            "name": element['name'],
-        }
-        response = api_call(CPmgmtIP, 443, 'show-host', payload, sid)[0]
-        jsonExtract['objects'].append(response)
+        if 'name' in element:
+            payload = {
+                "name": element['name'],
+            }
+            try:
+                response = api_call(CPmgmtIP, 443, 'show-host', payload, sid)[0]
+                jsonExtract['objects'].append(response)
+            except:
+                print("API call for object failed. Skipping. hostname : "+element['name'])
+        else:
+            print('No name for element, skipping object')
 
     for element in networkList['objects']:
-        payload = {
-            "name": element['name'],
-        }
-        response = api_call(CPmgmtIP, 443, 'show-network', payload, sid)[0]
-        jsonExtract['objects'].append(response)
+        if 'name' in element:
+            payload = {
+                "name": element['name'],
+            }
+            try:
+                response = api_call(CPmgmtIP, 443, 'show-network', payload, sid)[0]
+                jsonExtract['objects'].append(response)
+            except:
+                print('API call for network object failed. Skipping. Networkname : '+element['name'])
+        else:
+            print('No name for element, skipping object')
 
     for element in rangeList['objects']:
-        payload = {
-            "name": element['name'],
-        }
-        response = api_call(CPmgmtIP, 443, 'show-address-range', payload, sid)[0]
-        jsonExtract['objects'].append(response)
-
+        if 'name' in element:
+            payload = {
+                "name": element['name'],
+            }
+            try:
+                response = api_call(CPmgmtIP, 443, 'show-address-range', payload, sid)[0]
+                jsonExtract['objects'].append(response)
+            except:
+                print('API call for address range object failed. Skipping. Range : '+element['name'])
+        else:
+            print('No name for element, skipping object')
     return(json.dumps(jsonExtract))
 
 

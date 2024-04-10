@@ -3,7 +3,7 @@ import json, time
 from variables import api_call, sid, fw_stormshield, CPmgmtIP
 
 def getTCPServices():
-    limit = 20
+    limit = 500
     parsedResponse = {
         "objects":[]
     }
@@ -12,7 +12,10 @@ def getTCPServices():
         "details-level": "standard"
     }
     #change the limit to the max to ensure to get all services (500) on Checkpoint
-    response = api_call(CPmgmtIP, 443, 'show-services-tcp', payload, sid)[0]
+    try:
+        response = api_call(CPmgmtIP, 443, 'show-services-tcp', payload, sid)[0]
+    except:
+        print("Error occured, skipping offset")
     parsedResponse['objects'].extend(response["objects"])
     total = response['total']
     to = response['to']
@@ -23,13 +26,16 @@ def getTCPServices():
             "details-level": "standard",
             "offset":offset
         }
-        response = api_call(CPmgmtIP, 443, 'show-services-tcp', payload, sid)[0]
+        try:
+            response = api_call(CPmgmtIP, 443, 'show-services-tcp', payload, sid)[0]
+        except:
+            print("Error occured, skipping offset TCP")
         parsedResponse['objects'].extend(response["objects"])
         to = response['to']
     return(json.dumps(parsedResponse, indent=2))
 
 def getUDPServices():
-    limit = 20
+    limit = 500
     parsedResponse = {
         "objects": []
     }
@@ -39,7 +45,10 @@ def getUDPServices():
     }
 
     #change the limit to the max to ensure to get all services (500) on Checkpoint
-    response = api_call(CPmgmtIP, 443, 'show-services-udp', payload, sid)[0]
+    try:
+        response = api_call(CPmgmtIP, 443, 'show-services-udp', payload, sid)[0]
+    except:
+        print("Error occured, skipping offset UDP")
     parsedResponse['objects'].extend(response["objects"])
     total = response['total']
     to = response['to']
@@ -50,7 +59,10 @@ def getUDPServices():
             "details-level": "standard",
             "offset": offset
         }
-        response = api_call(CPmgmtIP, 443, 'show-services-udp', payload, sid)[0]
+        try:
+            response = api_call(CPmgmtIP, 443, 'show-services-udp', payload, sid)[0]
+        except:
+            print("Error occured, skipping offset UDP")
         parsedResponse['objects'].extend(response["objects"])
         to = response['to']
     return (json.dumps(parsedResponse, indent=2))
@@ -63,23 +75,34 @@ def createServiceList(TCPserviceList, UDPserviceList):
     TCPserviceList = json.loads(TCPserviceList)
     UDPserviceList = json.loads(UDPserviceList)
     for element in TCPserviceList['objects']:
-        payload = {
-            "name": element['name'],
-        }
-        response = api_call(CPmgmtIP, 443, 'show-service-tcp', payload, sid)[0]
-        jsonExtract['objects'].append(response)
+        if 'name' in element:
+            payload = {
+                "name": element['name'],
+            }
+            try:
+                response = api_call(CPmgmtIP, 443, 'show-service-tcp', payload, sid)[0]
+            except:
+                print("API Call failed, skipping TCP service name="+element['name'])
+            jsonExtract['objects'].append(response)
+        else:
+            print("Skipping element, no name defined")
     for element in UDPserviceList['objects']:
-        payload = {
-            "name": element['name'],
-        }
-        response = api_call(CPmgmtIP, 443, 'show-service-udp', payload, sid)[0]
-        jsonExtract['objects'].append(response)
-
+        if 'name' in element:
+            payload = {
+                "name": element['name'],
+            }
+            try:
+                response = api_call(CPmgmtIP, 443, 'show-service-udp', payload, sid)[0]
+            except:
+                print("API Call failed, skipping UDP service name="+element['name'])
+            jsonExtract['objects'].append(response)
+        else:
+            print("Skipping element, no name defined")
     return(json.dumps(jsonExtract))
 
 
 def getCheckpointServiceGroups():
-    limit = 20
+    limit = 500
     parsedResponse = {
         "objects": []
     }
@@ -87,9 +110,11 @@ def getCheckpointServiceGroups():
         "limit": limit,
         "details-level": "standard"
     }
-
-    # change the limit to the max to ensure to get all services (500) on Checkpoint
-    response = api_call(CPmgmtIP, 443, 'show-service-groups', payload, sid)[0]
+    try:
+        # change the limit to the max to ensure to get all services (500) on Checkpoint
+        response = api_call(CPmgmtIP, 443, 'show-service-groups', payload, sid)[0]
+    except:
+        print("API Call failed, skipping service group offset")
     parsedResponse['objects'].extend(response["objects"])
     total = response['total']
     to = response['to']
@@ -100,7 +125,10 @@ def getCheckpointServiceGroups():
             "details-level": "standard",
             "offset": offset
         }
-        response = api_call(CPmgmtIP, 443, 'show-service-groups', payload, sid)[0]
+        try:
+            response = api_call(CPmgmtIP, 443, 'show-service-groups', payload, sid)[0]
+        except:
+            print("API Call failed, skipping offset")
         parsedResponse['objects'].extend(response["objects"])
         to = response['to']
     return (json.dumps(parsedResponse, indent=2))
@@ -111,11 +139,17 @@ def createServiceGroupsList(groupsList):
     }
     groupsList = json.loads(groupsList)
     for element in groupsList['objects']:
-        payload = {
-            "name": element['name'],
-        }
-        response = api_call(CPmgmtIP, 443, 'show-service-group', payload, sid)[0]
-        jsonExtract['objects'].append(response)
+        if 'name' in element:
+            payload = {
+                "name": element['name'],
+            }
+            try:
+                response = api_call(CPmgmtIP, 443, 'show-service-group', payload, sid)[0]
+            except:
+                print("API call for group failed, skipping. GroupName : "+element['name'])
+            jsonExtract['objects'].append(response)
+        else:
+            print('No name element for group, skipping')
     return (json.dumps(jsonExtract))
 
 def createStormshieldServicegroups(servicegroups):
@@ -168,4 +202,5 @@ def main():
     createStormshieldServices(servicesList)
     #fw_stormshield.disconnect()
 
-main()
+if __name__ == '__main__':
+    main()

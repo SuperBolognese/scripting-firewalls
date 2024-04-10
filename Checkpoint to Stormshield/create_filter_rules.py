@@ -9,25 +9,80 @@
 #
 #################################################################################
 
-import json, os, requests
+import json, os
 
 from variables import api_call, sid, CPmgmtIP
 
 def getCheckpointRules():
-    ruleNumber = 1
-    parsedResponse = {
-        'objects': []
-    }
-    while ruleNumber < 6:
-        payload = {
-            "layer": "network",
-            "rule-number": ruleNumber
-        }
-        response = api_call(CPmgmtIP, 443, 'show-access-rule', payload, sid)
-        parsedResponse['objects'].extend(response)
-        ruleNumber+=1
 
-    return (json.dumps(parsedResponse["objects"]))
+    ruleNumber = 1
+    ruleloop = True
+
+    parsedResponse = {
+        'objects':[]
+    }
+
+    while ruleloop:
+        payload = {
+            "layer": "test",
+            "rule-number": ruleNumber,
+            "details-level": "full"
+        }
+        try:
+            response = api_call(CPmgmtIP, 443, 'show-access-rule', payload, sid)
+            content = response[0]
+            code = response[1]
+            match code:
+                case 200:
+                    parsedResponse['objects'].append(content)
+                    ruleNumber += 1
+                case 400:
+                    ruleloop = False
+                case _ :
+                    ruleNumber += 1
+        except:
+            print('API call for filter rule #'+ruleNumber+" failed, skipping")
+    return json.dumps(parsedResponse)
 
 def createFWRules(rulesList):
-    return
+
+    rulesList = json.loads(rulesList)
+
+    for rule in rulesList['objects']:
+        strSource = ""
+        strDst = ""
+        strService = ""
+        strLogLevel =rule['track']['type']['name']
+        if 'name' in rule:
+            strName = str.replace(rule['name']," ", "_")
+            query = "config filter rule insert index=10 type=filter state=on rulename="+strName
+        else:
+            query = "config filter rule insert index=10 type=filter state=on"
+        for source in rule['source']:
+            strSource += source['name']+","
+        for dest in rule['destination']:
+            strDst += dest['name']+","
+        for serv in rule['service']:
+            strService += serv['name']+","
+        action = rule['action']['name']
+        match action:
+            case 'Drop':
+                strAction = "reset"
+            case 'Accept':
+                strAction = "pass"
+            case 'Reject':
+                strAction = "block"
+        strSource = strSource[:-1]
+        strService = strService[:-1]
+        strDst = strDst[:-1]
+        query += " action="+strAction +" srctarget="+strSource+" dsttarget="+strDst+" dstport="+strService+" loglevel="+strLogLevel
+
+        print(query)
+
+
+def main():
+    rulelist = getCheckpointRules()
+    createFWRules(rulelist)
+
+if __name__ == '__main__':
+    main()
