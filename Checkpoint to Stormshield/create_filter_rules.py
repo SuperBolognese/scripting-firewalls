@@ -9,7 +9,7 @@
 #
 #################################################################################
 
-import json, os
+import json
 
 from variables import api_call, sid, CPmgmtIP
 
@@ -24,7 +24,7 @@ def getCheckpointRules():
 
     while ruleloop:
         payload = {
-            "layer": "test",
+            "layer": "oui network",   # Change layer name with layer. If no layer specifically stated, put "{package_name} network"
             "rule-number": ruleNumber,
             "details-level": "full"
         }
@@ -37,11 +37,16 @@ def getCheckpointRules():
                     parsedResponse['objects'].append(content)
                     ruleNumber += 1
                 case 400:
+                    ruleNumber += 1
+                    print(json.dumps(content, indent=2))
                     ruleloop = False
+                case 404:
+                    ruleNumber += 1
+                    print(json.dumps(content, indent=2))
                 case _ :
                     ruleNumber += 1
         except:
-            print('API call for filter rule #'+ruleNumber+" failed, skipping")
+            print("API call for filter rule #"+str(ruleNumber)+" failed, skipping")
     return json.dumps(parsedResponse)
 
 def createFWRules(rulesList):
@@ -75,8 +80,7 @@ def createFWRules(rulesList):
         strSource = strSource[:-1]
         strService = strService[:-1]
         strDst = strDst[:-1]
-        query += " action="+strAction +" srctarget="+strSource+" dsttarget="+strDst+" dstport="+strService+" loglevel="+strLogLevel
-
+        query += " action="+strAction +" srctarget="+strSource+" dsttarget="+strDst+" dstport="+strService+" loglevel="+strLogLevel +"inspection=ids"
         print(query)
 
 

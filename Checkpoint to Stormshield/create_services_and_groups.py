@@ -1,6 +1,6 @@
-import json, time
+import json
 
-from variables import api_call, sid, fw_stormshield, CPmgmtIP
+from variables import api_call, sid, CPmgmtIP
 
 def getTCPServices():
     limit = 500

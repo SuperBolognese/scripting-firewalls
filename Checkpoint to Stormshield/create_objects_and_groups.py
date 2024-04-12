@@ -9,9 +9,9 @@
 #
 ##############################################################################################
 
-import json, os
+import json
 
-from variables import api_call, sid, fw_stormshield, CPmgmtIP
+from variables import api_call, sid, CPmgmtIP
 
 def getCheckpointHosts():
     limit = 200
