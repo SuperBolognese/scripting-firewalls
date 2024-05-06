@@ -2,6 +2,8 @@ import json
 
 from variables import api_call, sid, CPmgmtIP
 
+dstFile = open("FILES/SNS_services.txt", 'w')
+
 def getTCPServices():
     limit = 500
     parsedResponse = {
@@ -158,7 +160,7 @@ def createStormshieldServicegroups(servicegroups):
         groupName = group['name']
         comment = group['comments']
         query = "config  object servicegroup new name=" + groupName + ' comment="' + comment +'"'
-        print(query)
+        print(query, file=dstFile)
         #print(fw_stormshield.send_command(query))
 
 def createStormshieldServices(servicesList):
@@ -184,13 +186,13 @@ def createStormshieldServices(servicesList):
                 query = "config  object service new name=" + serviceName + " port=" + startPort + ' proto='+ serviceType +' comment="' + comment + '" toport=65535'
             case _:
                 query = "config  object service new name=" + serviceName + " port=" + port + ' proto='+ serviceType +' comment="' + comment + '"'
-        print(query)
+        print(query, file=dstFile)
         #print(fw_stormshield.send_command(query))
 
         if groups:
             for group in groups:
                 addToGroup = "config  object servicegroup addto group=" + group['name'] + " node=" + serviceName
-                print(addToGroup)
+                print(addToGroup, file=dstFile)
                 #print(fw_stormshield.send_command(addToGroup))
 
 

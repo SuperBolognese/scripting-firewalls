@@ -12,6 +12,7 @@
 import json
 
 from variables import api_call, sid, CPmgmtIP
+dstFile = open("FILES/SNS_objects.txt", 'w')
 
 def getCheckpointHosts():
     limit = 200
@@ -141,9 +142,9 @@ def getCheckpointGroups():
 def createNetworkGroups(groupsList):
     for group in groupsList["objects"]:
         groupName = group['name']
-        comment = group['comments']
-        query = "config  object group new name=" + groupName + ' comment="' + comment +'"'
-        print(query)
+        #comment = group['comments']
+        query = "config  object group new name=" + groupName
+        print(query, file=dstFile)
         #print(fw_stormshield.send_command(query))
 
 def makeObjectsList(hostsList, networkList, rangeList):
@@ -215,7 +216,7 @@ def createStormshieldObjects(objectList):
                 startIP = element['ipv4-address-first']
                 endIP = element['ipv4-address-last']
                 query = "config object host new name="+ name + " begin=" + startIP +" end="+ endIP + ' comment="' + comment +'"'
-        print(query)
+        print(query, file=dstFile)
         #print(fw_stormshield.send_command(query))
 
         if groups:

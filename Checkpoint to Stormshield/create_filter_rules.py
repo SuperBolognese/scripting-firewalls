@@ -13,6 +13,7 @@ import json
 
 from variables import api_call, sid, CPmgmtIP
 
+dstFile = open('FILES/SNS_filter_rules.txt', 'w')
 def getCheckpointRules():
 
     ruleNumber = 1
@@ -24,7 +25,7 @@ def getCheckpointRules():
 
     while ruleloop:
         payload = {
-            "layer": "oui network",   # Change layer name with layer. If no layer specifically stated, put "{package_name} network"
+            "layer": "network",   # Change layer name with layer. If no layer specifically stated, put "{package_name} network"
             "rule-number": ruleNumber,
             "details-level": "full"
         }
@@ -80,8 +81,8 @@ def createFWRules(rulesList):
         strSource = strSource[:-1]
         strService = strService[:-1]
         strDst = strDst[:-1]
-        query += " action="+strAction +" srctarget="+strSource+" dsttarget="+strDst+" dstport="+strService+" loglevel="+strLogLevel +"inspection=ids"
-        print(query)
+        query += " action="+strAction +" srctarget="+strSource+" dsttarget="+strDst+" dstport="+strService+" loglevel=minor" +" inspection=ids"
+        print(query, file=dstFile)
 
 
 def main():
