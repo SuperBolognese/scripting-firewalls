@@ -1,0 +1,16 @@
+#type,#name,#ip,#ipv6,#resolve,#mac,#comment
+host,localhost,127.0.0.1,::1,static,,"default loopback interface"
+#type,#name,#begin,#end,#beginv6,#endv6,#beginmac,#endmac,#comment
+range,dhcp_range,10.0.0.10,10.0.0.100,,,,,"test_range dhcp"
+#type,#name,#ip,#mask,#prefixlen,#ipv6,#prefixlenv6,#comment
+network,VPNSSL_Users_IP,10.248.2.0,255.255.255.224,27,,,"data_dump"
+#type,#name,#proto,#port,#toport,#comment
+service,agent_ad,tcp,1301,,"SNS Agent for Active Directory"
+service,ad2003-dyn_tcp,any,1025,5000,"Active Directory 2003 dynamic ports"
+#type,#name,#protonumber,#comment
+protocol,l2tp,115,"Layer Two Tunneling Protocol"
+#type,#name,#time_slots,#week_days,#year_days,#periods,#comment
+time,workhours,08:00-20:00,1-5,,,""
+#type,#name,#elements,#comment
+group,group1,"Global_AP_CP,Global_test_host",""
+servicegroup,full_srv,"dns_udp,ftp,http,https,imap,nntp,oscar,pop3,smtp,telnet","Useful Services"
