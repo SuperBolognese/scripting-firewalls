@@ -148,11 +148,7 @@ def createStormshieldNatRules(natRulesList):
                                     break
                             except:
                                 print("Route format error, skipping")
-                        query += " dstif=" + interface_nat + " natsrctarget=" + translatedSource
-                        if originalService == "Any": #revoir la condition, me semble un peu bancale
-                            query += " natsrcport=ephemeral_fw"
-                        else:
-                            query += " natsrcport=" + translatedService
+                        query += " dstif=" + interface_nat + " natsrctarget=" + translatedSource + " natsrcport=ephemeral_fw"
 
 
                 elif translatedSource == "Original" and translatedDest != "Original": #DNAT
