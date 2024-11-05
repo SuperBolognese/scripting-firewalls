@@ -10,6 +10,7 @@
 #################################################################################
 
 import json, ipaddress
+import time
 
 from variables import api_call, sid, CPmgmtIP
 
@@ -183,6 +184,7 @@ def createStormshieldNatRules(natRulesList):
 def main():
     natRulesList = getCheckpointNatRules()
     createStormshieldNatRules(natRulesList)
+    time.sleep(10)
 
 if __name__ == '__main__':
     main()

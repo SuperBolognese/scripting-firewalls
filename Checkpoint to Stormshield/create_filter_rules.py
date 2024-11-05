@@ -10,6 +10,7 @@
 #################################################################################
 
 import json
+import time
 
 from variables import api_call, sid, CPmgmtIP
 
@@ -88,6 +89,7 @@ def createFWRules(rulesList):
 def main():
     rulelist = getCheckpointRules()
     createFWRules(rulelist)
+    time.sleep(10)
 
 if __name__ == '__main__':
     main()

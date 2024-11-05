@@ -1,4 +1,5 @@
 import json
+import time
 
 from variables import api_call, sid, CPmgmtIP
 
@@ -203,6 +204,7 @@ def main():
     createStormshieldServicegroups(serviceGroups)
     createStormshieldServices(servicesList)
     #fw_stormshield.disconnect()
+    time.sleep(10)
 
 if __name__ == '__main__':
     main()

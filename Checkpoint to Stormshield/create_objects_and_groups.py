@@ -10,6 +10,7 @@
 ##############################################################################################
 
 import json
+import time
 
 from variables import api_call, sid, CPmgmtIP
 dstFile = open("FILES/SNS_objects.txt", 'w')
@@ -222,7 +223,7 @@ def createStormshieldObjects(objectList):
         if groups:
             for group in groups:
                 addToGroup = "config object group addto group=" + group['name'] + " node=" + name
-                print(addToGroup)
+                print(addToGroup, file=dstFile)
                 #print(fw_stormshield.send_command(addToGroup))
 
 def main():
@@ -231,6 +232,7 @@ def main():
     objectList = makeObjectsList(getCheckpointHosts(), getCheckpointNetworks(), getCheckpointAddressRanges())
     createNetworkGroups(objectGroups)
     createStormshieldObjects(objectList)
+    time.sleep(10)
     #fw_stormshield.disconnect()
 
 if __name__ == '__main__':

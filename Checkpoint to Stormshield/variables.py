@@ -3,17 +3,17 @@ import requests, json
 
 #stormshield informations variable
 #change values with your informations
-fw_stormshield = SSLClient(
-    host='ip_addr', port=443,
-    user='admin', password='admin',
-    sslverifyhost=False
-)
+#fw_stormshield = SSLClient(
+#    host='ip_addr', port=443,
+#    user='admin', password='admin',
+#    sslverifyhost=False
+#)
 
 #method to make API calls to the checkpoint management appliance
 #must have enabled API beforehand : https://community.checkpoint.com/t5/API-CLI-Discussion/Enabling-web-api/td-p/32641
 
 #change IP address here
-CPmgmtIP = '10.10.10.11' 
+CPmgmtIP = '10.43.193.25'
 
 def api_call(ip_addr, port, command, json_payload, sid):
     url = 'https://' + ip_addr + ':' + str(port) + '/web_api/' + command
@@ -31,4 +31,4 @@ def login(user,password):
     return response["sid"]
 
 #put the SmartCenter credentials here
-sid = login('admin','admin')
+sid = login('admin','admin1')

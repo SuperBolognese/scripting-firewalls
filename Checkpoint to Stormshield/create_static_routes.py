@@ -1,4 +1,5 @@
 import ipaddress, json
+import time
 
 routeFile = open('FILES/SNS_static_routes.txt',"w")
 def getIPSubnet(ipAddr,mask):
@@ -52,6 +53,7 @@ def createSNSRoutes():
             print(query, file=routeFile)
 def main():
     createSNSRoutes()
+    time.sleep(10)
 
 if __name__ == '__main__':
     main()
